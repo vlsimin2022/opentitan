@@ -176,6 +176,9 @@ For IPs that are pre-verified sub-modules, we perform [integration testing](#int
 These are simple functional tests written in C which are cross-compiled and run natively on the Ibex core.
 The software compilation flow to enable this is explained in further detail in the [Building Software](../../../getting_started/build_sw.md) document.
 Further, there is a mechanism for the C test running on the CPU to signal the SystemVerilog testbench the test pass or fail indication based on the observed DUT behavior.
+At chip-level DV the C code calls `test_status_set()` (see `sw/device/lib/testing/test_framework/status.c`), which writes a small status code to the DV simulation window register exposed at `device_test_status_address()` (defined for DV in `sw/device/lib/arch/device_sim_dv.c`).
+The testbench connects this register to `sw_test_status_if` (`hw/dv/sv/sw_test_status`), which watches the write strobes and transitions a small FSM to raise pass/fail back into the SV environment.
+This DPI-free path keeps the communication simple: the software writes a memory-mapped word, and the SV harness observes it to end the test cleanly.
 We also provide an environment knob to 'stub' the CPU and use a TL agent to drive the traffic via the CPU's data channel instead, in cases where more intensive testing is needed.
 <!-- TODO: add link to chip DV document -->
 The chip DV document, which is currently under active development will explain these methodologies and flows in further detail.
